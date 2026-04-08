@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  border-radius: 0 !important;
+}
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  font-feature-settings: "tnum" on, "lnum" on;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar — thin 3px */
+.log-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.log-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.log-scroll::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+
+/* Bloomberg toggle switch */
+.bb-toggle {
+  width: 36px;
+  height: 18px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.bb-toggle::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #e0e0e0;
+  top: 2px;
+  transition: transform 0.15s ease;
+}
+.bb-toggle.off {
+  background: #333333;
+}
+.bb-toggle.off::after {
+  transform: translateX(2px);
+}
+.bb-toggle.on {
+  background: #00ff41;
+}
+.bb-toggle.on::after {
+  transform: translateX(20px);
+}
+
+/* Blink animation (cursor/status indicators) */
+@keyframes bb-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.bb-blink {
+  animation: bb-blink 1s step-end infinite;
+}
+
+/* Price flash animations */
+@keyframes flash-green {
+  0% { background-color: rgba(0, 255, 65, 0.3); }
+  100% { background-color: transparent; }
+}
+@keyframes flash-red {
+  0% { background-color: rgba(255, 49, 49, 0.3); }
+  100% { background-color: transparent; }
+}
+.bb-flash-green {
+  animation: flash-green 200ms ease-out;
+}
+.bb-flash-red {
+  animation: flash-red 200ms ease-out;
+}
+
+/* Order book bars */
+.ob-bid-bar {
+  background: linear-gradient(to left, rgba(0, 255, 65, 0.1), transparent);
+}
+.ob-ask-bar {
+  background: linear-gradient(to right, rgba(255, 49, 49, 0.1), transparent);
+}

@@ -1,0 +1,51 @@
+groups:
+  - name: tradingbot
+    rules:
+      - alert: ScannerDown
+        expr: time() - tradingbot_scanner_last_update_timestamp > 300
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scanner has not updated in 5 minutes"
+
+      - alert: TradingDisabled
+        expr: tradingbot_trading_enabled == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Trading kill switch is OFF"
+
+      - alert: BalanceDrop
+        expr: (tradingbot_safe_balance_usdce - tradingbot_safe_balance_usdce offset 1h) / tradingbot_safe_balance_usdce offset 1h < -0.10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Safe balance dropped >10% in the last hour"
+
+      - alert: HighOrderFailureRate
+        # These are Gauges (cumulative values from Redis), so use increase() not rate()
+        expr: increase(tradingbot_execution_orders_failed[5m]) / clamp_min(increase(tradingbot_execution_orders_submitted[5m]), 1) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Order failure rate exceeds 50%"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage exceeds 80%"

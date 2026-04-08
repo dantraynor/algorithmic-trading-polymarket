@@ -1,0 +1,57 @@
+# Local development: builds from source
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  ingestion:
+    build:
+      context: ./ingestion
+      dockerfile: Dockerfile
+
+  signal-core:
+    build:
+      context: ./signal-core
+      dockerfile: Dockerfile
+
+  execution:
+    build:
+      context: ./execution
+      dockerfile: Dockerfile
+
+  settlement:
+    build:
+      context: ./settlement
+      dockerfile: Dockerfile
+
+  btc-5m:
+    build:
+      context: ./btc-5m
+      dockerfile: Dockerfile
+
+  btc-5m-momentum:
+    build:
+      context: ./btc-5m-momentum
+      dockerfile: Dockerfile
+
+  btc-5m-latency:
+    build:
+      context: ./btc-5m-latency
+      dockerfile: Dockerfile
+
+  crypto-signals:
+    build:
+      context: .
+      dockerfile: crypto-signals/Dockerfile
+
+  alpha-executor:
+    build:
+      context: .
+      dockerfile: alpha-executor/Dockerfile
+
+  sports-signals:
+    build:
+      context: .
+      dockerfile: sports-signals/Dockerfile
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile

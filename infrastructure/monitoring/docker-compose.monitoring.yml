@@ -1,0 +1,86 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: tradingbot-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - tradingbot_tradingbot
+    restart: unless-stopped
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: tradingbot-redis-exporter
+    environment:
+      - REDIS_ADDR=unix:///var/run/redis/redis.sock
+    volumes:
+      - redis-socket:/var/run/redis:ro
+    ports:
+      - "127.0.0.1:9121:9121"
+    networks:
+      - tradingbot_tradingbot
+    restart: unless-stopped
+
+  metrics-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.metrics
+    container_name: tradingbot-metrics-exporter
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+    volumes:
+      - redis-socket:/var/run/redis:ro
+    ports:
+      - "127.0.0.1:9122:9122"
+    networks:
+      - tradingbot_tradingbot
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: tradingbot-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - tradingbot_tradingbot
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: tradingbot-alertmanager
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "127.0.0.1:9093:9093"
+    networks:
+      - tradingbot_tradingbot
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  redis-socket:
+    external: true
+    name: tradingbot_redis-socket
+
+networks:
+  tradingbot_tradingbot:
+    external: true

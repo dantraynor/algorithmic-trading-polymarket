@@ -1,0 +1,13 @@
+# GCP Project Configuration
+project_id = "your-gcp-project-id"
+
+# Region and zone — use a non-US region for Polymarket geo-compliance
+# Examples: europe-west6 (Zurich), europe-west2 (London), asia-southeast1 (Singapore)
+region = "europe-west6"
+zone   = "europe-west6-a"
+
+# SSH access — restrict to your IP(s)
+ssh_source_ranges = ["YOUR_IP/32"]
+
+# Machine type — e2-medium (~$35/mo) is sufficient for most setups
+# machine_type = "e2-medium"

@@ -1,0 +1,78 @@
+# Dependencies
+node_modules/
+dist/
+target/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Secrets
+*.pem
+*.key
+private_key*
+credentials.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Claude Code
+.claude/
+.claude.local.md
+CLAUDE.md
+
+# OMC working files
+.omc/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.tsbuildinfo
+
+# Rust
+**/*.rs.bk
+*.rlib
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Redis dump
+dump.rdb
+
+# Deployment archives
+*.tar.gz
+
+# Grafana data
+infrastructure/monitoring/grafana-data/
+infrastructure/monitoring/prometheus-data/
+
+# GCP/Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+
+# Sensitive configs that may contain secrets
+**/secrets/
+*.secret

@@ -1,0 +1,26 @@
+# Production: pulls pre-built images from GCP Artifact Registry
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  ingestion:
+    image: ${REGISTRY_PREFIX}/ingestion:${IMAGE_TAG:-latest}
+
+  signal-core:
+    image: ${REGISTRY_PREFIX}/signal-core:${IMAGE_TAG:-latest}
+
+  execution:
+    image: ${REGISTRY_PREFIX}/execution:${IMAGE_TAG:-latest}
+
+  settlement:
+    image: ${REGISTRY_PREFIX}/settlement:${IMAGE_TAG:-latest}
+
+  btc-5m:
+    image: ${REGISTRY_PREFIX}/btc-5m:${IMAGE_TAG:-latest}
+
+  btc-5m-momentum:
+    image: ${REGISTRY_PREFIX}/btc-5m-momentum:${IMAGE_TAG:-latest}
+
+  btc-5m-latency:
+    image: ${REGISTRY_PREFIX}/btc-5m-latency:${IMAGE_TAG:-latest}
+
+  dashboard:
+    image: ${REGISTRY_PREFIX}/dashboard:${IMAGE_TAG:-latest}

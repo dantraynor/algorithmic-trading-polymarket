@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir prometheus_client redis
+
+COPY metrics_exporter.py .
+
+EXPOSE 9122
+
+CMD ["python", "metrics_exporter.py"]

@@ -1,0 +1,27 @@
+[package]
+name = "signal-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Trading Bot Team"]
+description = "O(1) arbitrage detection engine for Polymarket"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full", "rt-multi-thread"] }
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+thiserror = "1.0"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+dashmap = "5.5"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

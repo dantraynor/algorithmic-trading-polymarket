@@ -1,0 +1,277 @@
+# Base configuration — must be used with an override file:
+#   Dev:  docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#   Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: tradingbot-redis
+    user: root
+    command: >
+      sh -c "mkdir -p /var/run/redis && chmod 777 /var/run/redis &&
+      exec redis-server
+      --port 0
+      --unixsocket /var/run/redis/redis.sock
+      --unixsocketperm 777
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru"
+    volumes:
+      - redis-socket:/var/run/redis
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-s", "/var/run/redis/redis.sock", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  ingestion:
+    container_name: tradingbot-ingestion
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - POLYMARKET_WS_URL=wss://ws-subscriptions-clob.polymarket.com/ws/market
+      - RUST_LOG=info
+    volumes:
+      - redis-socket:/var/run/redis
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  signal-core:
+    container_name: tradingbot-signal
+    depends_on:
+      redis:
+        condition: service_healthy
+      ingestion:
+        condition: service_started
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - ARBITRAGE_BUFFER=0.005
+      - MIN_EDGE_USD=0.50
+      - RUST_LOG=info
+    volumes:
+      - redis-socket:/var/run/redis
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  execution:
+    container_name: tradingbot-execution
+    depends_on:
+      redis:
+        condition: service_healthy
+      signal-core:
+        condition: service_started
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - USE_SECRET_MANAGER=false
+      - CLOB_API_URL=https://clob.polymarket.com
+      - NODE_ENV=production
+    volumes:
+      - redis-socket:/var/run/redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  settlement:
+    container_name: tradingbot-settlement
+    depends_on:
+      redis:
+        condition: service_healthy
+      execution:
+        condition: service_started
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - POLYGON_RPC_URL=https://polygon-bor-rpc.publicnode.com
+      - NODE_ENV=production
+    volumes:
+      - redis-socket:/var/run/redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  btc-5m:
+    container_name: tradingbot-btc-5m
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - CLOB_API_URL=https://clob.polymarket.com
+      - NODE_ENV=production
+    volumes:
+      - redis-socket:/var/run/redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  btc-5m-momentum:
+    container_name: tradingbot-btc-5m-momentum
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - CLOB_API_URL=https://clob.polymarket.com
+      - NODE_ENV=production
+    volumes:
+      - redis-socket:/var/run/redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  btc-5m-latency:
+    container_name: tradingbot-btc-5m-latency
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - CLOB_API_URL=https://clob.polymarket.com
+      - NODE_ENV=production
+    volumes:
+      - redis-socket:/var/run/redis
+      - sqlite-data:/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  crypto-signals:
+    container_name: tradingbot-crypto-signals
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - redis-socket:/var/run/redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  alpha-executor:
+    container_name: tradingbot-alpha-executor
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - redis-socket:/var/run/redis
+      - sqlite-data:/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+  sports-signals:
+    container_name: tradingbot-sports-signals
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - redis-socket:/var/run/redis
+      - sqlite-data:/data
+    env_file:
+      - .env
+    networks:
+      - tradingbot
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  dashboard:
+    container_name: tradingbot-dashboard
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - redis-socket:/var/run/redis
+      - sqlite-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - tradingbot
+
+volumes:
+  redis-socket:
+  redis-data:
+  sqlite-data:
+
+networks:
+  tradingbot:
+    driver: bridge
