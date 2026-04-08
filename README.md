@@ -244,7 +244,7 @@ tradingbot/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome — especially new strategies, dashboard improvements, and additional exchange integrations.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
