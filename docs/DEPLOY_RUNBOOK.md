@@ -15,7 +15,7 @@
 # Check if bucket exists
 gcloud storage buckets describe gs://YOUR_STATE_BUCKET 2>/dev/null && echo "EXISTS" || echo "NEEDS CREATION"
 
-# Create if needed (use a non-US region for geo-compliance)
+# Create if needed. Choose a region that matches your legal and platform obligations.
 gcloud storage buckets create gs://YOUR_STATE_BUCKET \
   --location=YOUR_REGION \
   --uniform-bucket-level-access

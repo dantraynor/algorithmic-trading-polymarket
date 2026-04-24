@@ -1,0 +1,30 @@
+# Wallet-free local demo.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.demo.yml \
+#     up -d --build redis dashboard demo-seed
+#
+# This starts only Redis, the dashboard, and a synthetic data feeder. It never starts
+# execution services and does not need wallets, CLOB credentials, or live order flow.
+services:
+  dashboard:
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+      - DASHBOARD_API_SECRET=demo_dashboard_secret
+      - NEXT_PUBLIC_APP_NAME=Polymarket Research Terminal
+
+  demo-seed:
+    image: redis:7-alpine
+    container_name: tradingbot-demo-seed
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_SOCKET_PATH=/var/run/redis/redis.sock
+    volumes:
+      - redis-socket:/var/run/redis
+      - ./scripts/demo-seed.sh:/usr/local/bin/demo-seed.sh:ro
+    command: ["sh", "/usr/local/bin/demo-seed.sh"]
+    restart: unless-stopped
+    networks:
+      - tradingbot

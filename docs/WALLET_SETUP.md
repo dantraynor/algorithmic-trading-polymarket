@@ -41,7 +41,7 @@ The Safe must approve the CTF Exchange contract to spend USDCe on its behalf.
 
 ## 4. Derive CLOB API Keys
 
-CLOB API keys are **IP-bound** — they must be derived from the production server's IP address (Zurich).
+CLOB API keys are **IP-bound**. Derive them from the same server or egress IP that will run execution.
 
 ### From the production server:
 ```bash

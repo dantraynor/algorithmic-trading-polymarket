@@ -22,5 +22,14 @@ services:
   btc-5m-latency:
     image: ${REGISTRY_PREFIX}/btc-5m-latency:${IMAGE_TAG:-latest}
 
+  crypto-signals:
+    image: ${REGISTRY_PREFIX}/crypto-signals:${IMAGE_TAG:-latest}
+
+  alpha-executor:
+    image: ${REGISTRY_PREFIX}/alpha-executor:${IMAGE_TAG:-latest}
+
+  sports-signals:
+    image: ${REGISTRY_PREFIX}/sports-signals:${IMAGE_TAG:-latest}
+
   dashboard:
     image: ${REGISTRY_PREFIX}/dashboard:${IMAGE_TAG:-latest}

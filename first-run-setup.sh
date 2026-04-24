@@ -2,7 +2,7 @@
 set -e
 
 echo "==================================="
-echo "Polymarket Trading Bot - First Run Setup"
+echo "Polymarket Research Terminal - First Run Setup"
 echo "==================================="
 echo "==================================="
 

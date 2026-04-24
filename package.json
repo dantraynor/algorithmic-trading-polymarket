@@ -1,0 +1,27 @@
+{
+  "name": "polymarket-research-terminal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Open-source infrastructure for researching, simulating, monitoring, and safely operating Polymarket strategies.",
+  "scripts": {
+    "doctor": "make doctor",
+    "demo": "make demo",
+    "demo:down": "make demo-down",
+    "setup": "make setup",
+    "up": "make up",
+    "down": "make down",
+    "build": "make build",
+    "test": "make test"
+  },
+  "keywords": [
+    "polymarket",
+    "prediction-markets",
+    "trading",
+    "research",
+    "dashboard",
+    "rust",
+    "typescript",
+    "docker"
+  ],
+  "license": "MIT"
+}

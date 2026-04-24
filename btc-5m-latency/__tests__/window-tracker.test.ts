@@ -10,6 +10,21 @@ describe('WindowTracker', () => {
     tracker = new WindowTracker();
   });
 
+  function recordFill(
+    side: 'UP' | 'DOWN',
+    shares: Decimal,
+    price: Decimal,
+    edge: Decimal,
+  ): void {
+    tracker.recordFill(1000, {
+      side,
+      tokenId: `${side.toLowerCase()}-token`,
+      shares,
+      price,
+      edge,
+    });
+  }
+
   it('starts a window with correct initial state', () => {
     tracker.startWindow(1000, new Decimal(65000));
     const w = tracker.getCurrentWindow(1000);
@@ -24,8 +39,8 @@ describe('WindowTracker', () => {
 
   it('records UP fills and updates avg cost', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.85), new Decimal(0.08));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('UP', new Decimal(10), new Decimal(0.85), new Decimal(0.08));
 
     const w = tracker.getCurrentWindow(1000)!;
     expect(w.upSharesHeld.toNumber()).toBe(20);
@@ -37,7 +52,7 @@ describe('WindowTracker', () => {
 
   it('records DOWN fills independently', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'DOWN', new Decimal(5), new Decimal(0.30), new Decimal(0.12));
+    recordFill('DOWN', new Decimal(5), new Decimal(0.30), new Decimal(0.12));
 
     const w = tracker.getCurrentWindow(1000)!;
     expect(w.downSharesHeld.toNumber()).toBe(5);
@@ -47,8 +62,8 @@ describe('WindowTracker', () => {
 
   it('tracks max edge and avg edge', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.85), new Decimal(0.15));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('UP', new Decimal(10), new Decimal(0.85), new Decimal(0.15));
 
     const w = tracker.getCurrentWindow(1000)!;
     expect(w.maxEdgeSeen.toNumber()).toBe(0.15);
@@ -58,7 +73,7 @@ describe('WindowTracker', () => {
   it('settles UP outcome correctly', () => {
     tracker.startWindow(1000, new Decimal(65000));
     // Buy 10 UP shares at $0.80 each -> cost $8
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
 
     // Final price >= price to beat -> UP wins
     const pnl = tracker.settleWindow(1000, new Decimal(65100));
@@ -71,7 +86,7 @@ describe('WindowTracker', () => {
   it('settles DOWN outcome correctly', () => {
     tracker.startWindow(1000, new Decimal(65000));
     // Buy 10 DOWN shares at $0.30 each -> cost $3
-    tracker.recordFill(1000, 'DOWN', new Decimal(10), new Decimal(0.30), new Decimal(0.12));
+    recordFill('DOWN', new Decimal(10), new Decimal(0.30), new Decimal(0.12));
 
     // Final price < price to beat -> DOWN wins
     const pnl = tracker.settleWindow(1000, new Decimal(64900));
@@ -83,7 +98,7 @@ describe('WindowTracker', () => {
 
   it('handles losing window (UP bought, DOWN wins)', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
 
     // DOWN wins
     const pnl = tracker.settleWindow(1000, new Decimal(64900));
@@ -95,8 +110,8 @@ describe('WindowTracker', () => {
 
   it('handles both sides in same window', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
-    tracker.recordFill(1000, 'DOWN', new Decimal(5), new Decimal(0.15), new Decimal(0.08));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('DOWN', new Decimal(5), new Decimal(0.15), new Decimal(0.08));
 
     // UP wins: UP shares pay out, DOWN shares worthless
     const pnl = tracker.settleWindow(1000, new Decimal(65100));
@@ -114,7 +129,7 @@ describe('WindowTracker', () => {
 
   it('hasTraded returns true after a fill', () => {
     tracker.startWindow(1000, new Decimal(65000));
-    tracker.recordFill(1000, 'UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
+    recordFill('UP', new Decimal(10), new Decimal(0.80), new Decimal(0.10));
     expect(tracker.hasTraded(1000)).toBe(true);
   });
 

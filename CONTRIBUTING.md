@@ -1,66 +1,90 @@
 # Contributing
 
-Thanks for your interest in contributing to the Polymarket trading platform.
+Thanks for helping improve the Polymarket Research Terminal.
 
-The codebase is meant as a **neutral, structured deployment**: every environment brings its own wallets, RPC URLs, and API keys via `.env` — nothing in the tree should assume a specific operator.
+The best contributions make the project safer, easier to run, easier to inspect, or easier to extend. Avoid changes that make live trading more automatic without adding stronger guardrails.
 
-## Getting Started
-
-1. Fork the repo and clone it locally
-2. Copy `.env.example` to `.env` and fill in your credentials
-3. Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build`
-4. Make your changes on a feature branch
-
-## Development
-
-### Building individual services
+## First Run
 
 ```bash
-# Rust services
-cd ingestion && cargo build --release
-cd signal-core && cargo build --release
-
-# TypeScript services
-cd <service> && npm install && npm run build
-
-# Run tests
-cd <service> && npm test       # TypeScript
-cd <service> && cargo test     # Rust
+make doctor
+make demo
 ```
 
-### Code conventions
+Use the demo to understand the dashboard before wiring real services.
 
-- **Rust**: `tracing` crate for structured logging, `thiserror` for custom errors
-- **TypeScript**: Winston logger, strict null checks, Decimal.js for financial math (never floating point)
-- **Dashboard**: Bloomberg `bb-*` color tokens, zero border-radius, IBM Plex Mono 11px
-- All services implement graceful shutdown (SIGINT/SIGTERM handlers)
-- Exponential backoff for all reconnection logic
+For full-stack development:
 
-### Adding a new strategy
+```bash
+make setup
+make up
+make logs
+```
 
-1. Create a new service directory (e.g. `my-strategy/`)
-2. Connect to Redis via Unix socket, read order books or external data
-3. Publish signals to a Redis pub/sub channel
-4. Add a Dockerfile and entry in `docker-compose.yml`
-5. Add a kill switch key in Redis (follow the `*_TRADING_ENABLED` pattern)
-6. If using the dashboard, add one entry to `dashboard/src/lib/strategy-registry.ts`
+Keep all dry-run variables enabled unless your change specifically requires execution testing.
+
+## Development Commands
+
+```bash
+make test
+make build
+make down
+```
+
+Individual services:
+
+```bash
+cd ingestion && cargo test
+cd signal-core && cargo test
+
+cd dashboard && npm ci && npm run build && npm test
+cd alpha-executor && npm ci && npm run build && npm test
+```
+
+## Code Conventions
+
+- Rust services use `tracing`, explicit error handling, and graceful shutdown.
+- TypeScript services use strict config parsing and Decimal.js for financial math.
+- Strategy code should keep signal generation separate from execution.
+- Dashboard UI should prioritize dense, readable operational state over decoration.
+- All new strategy behavior needs focused unit tests for signal and risk decisions.
+
+## Adding A Strategy
+
+1. Create a service directory.
+2. Add a config module with safe defaults.
+3. Read market data from Redis or a documented external feed.
+4. Publish typed signals to Redis.
+5. Gate execution behind dry-run mode and kill switches.
+6. Register dashboard metadata in `dashboard/src/lib/strategy-registry.ts`.
+7. Add tests and docs.
 
 ## Pull Requests
 
-- Keep PRs focused — one feature or fix per PR
-- Include a clear description of what changed and why
-- Add tests for new strategy logic or risk management changes
-- Make sure `cargo build --release` and `npm run build` pass for affected services
-- Don't commit `.env` files or anything with secrets
+Open focused PRs. Include:
 
-## Reporting Issues
+- What changed
+- Why it changed
+- How to run or test it
+- Any safety impact
+- Screenshots for dashboard changes
 
-Open an issue with:
-- What you expected to happen
-- What actually happened
-- Steps to reproduce
-- Relevant logs (sanitize any wallet addresses or API keys)
+Do not commit `.env`, keys, wallet addresses you do not intend to publish, API credentials, or generated secrets.
+
+## Issue Reports
+
+Include:
+
+- Expected behavior
+- Actual behavior
+- Reproduction steps
+- Relevant logs with secrets removed
+- Whether you were in demo, paper, or live mode
+
+## Security
+
+Report sensitive issues privately. See [SECURITY.md](SECURITY.md).
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contribution is licensed under the MIT License.

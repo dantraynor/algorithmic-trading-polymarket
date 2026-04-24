@@ -42,33 +42,41 @@ describe('PortfolioRiskManager', () => {
     });
 
     it('returns phase 2 at $10K-$100K', () => {
-      expect(rm.determinePhase(10_000)).toBe(2);
-      expect(rm.determinePhase(50_000)).toBe(2);
+      expect(rm.determinePhase(10_000, 50)).toBe(2);
+      expect(rm.determinePhase(50_000, 75)).toBe(2);
+    });
+
+    it('keeps phase 1 until enough windows are traded', () => {
+      expect(rm.determinePhase(10_000, 49)).toBe(1);
     });
 
     it('returns phase 3 at $100K+', () => {
-      expect(rm.determinePhase(100_000)).toBe(3);
-      expect(rm.determinePhase(500_000)).toBe(3);
+      expect(rm.determinePhase(100_000, 200)).toBe(3);
+      expect(rm.determinePhase(500_000, 250)).toBe(3);
+    });
+
+    it('keeps phase 2 until enough phase-3 windows are traded', () => {
+      expect(rm.determinePhase(100_000, 199)).toBe(2);
     });
   });
 
   describe('checkExposureCap', () => {
-    it('allows trade within exposure cap', () => {
+    it('allows trade within exposure cap', async () => {
       const state = makeState({ totalExposure: 2_000 });
-      const result = rm.checkExposureCap(state, 3_000);
+      const result = await rm.checkExposureCap(state, 3_000);
       expect(result.allowed).toBe(true);
     });
 
-    it('rejects trade exceeding exposure cap', () => {
+    it('rejects trade exceeding exposure cap', async () => {
       const state = makeState({ totalExposure: 5_500 });
-      const result = rm.checkExposureCap(state, 1_000);
+      const result = await rm.checkExposureCap(state, 1_000);
       expect(result.allowed).toBe(false);
       expect(result.reason).toContain('exposure');
     });
 
-    it('adjusts size to fit within cap', () => {
+    it('adjusts size to fit within cap', async () => {
       const state = makeState({ totalExposure: 5_000 });
-      const result = rm.checkExposureCap(state, 2_000);
+      const result = await rm.checkExposureCap(state, 2_000);
       expect(result.allowed).toBe(true);
       expect(result.adjustedSize).toBe(1_000);
     });
@@ -119,15 +127,15 @@ describe('PortfolioRiskManager', () => {
   });
 
   describe('runAllChecks', () => {
-    it('passes when all rules satisfied', () => {
+    it('passes when all rules satisfied', async () => {
       const state = makeState();
-      const result = rm.runAllChecks(state, 1_000);
+      const result = await rm.runAllChecks(state, 1_000);
       expect(result.allowed).toBe(true);
     });
 
-    it('fails on first violated rule', () => {
+    it('fails on first violated rule', async () => {
       const state = makeState({ safeBalance: 7_500, peakCapital: 10_000 });
-      const result = rm.runAllChecks(state, 1_000);
+      const result = await rm.runAllChecks(state, 1_000);
       expect(result.allowed).toBe(false);
     });
   });
