@@ -58,9 +58,9 @@ make demo-down
 
 The demo starts only Redis, the dashboard, and a synthetic data feeder. Execution services are not started.
 
-## Why People Star This
+## Includes
 
-- **Real architecture, not a toy script** - Rust ingestion, TypeScript strategy services, Redis streams, SQLite analytics, Docker Compose, and CI.
+- **Real architecture** - Rust ingestion, TypeScript strategy services, Redis streams, SQLite analytics, Docker Compose, and CI.
 - **Safe first-run experience** - local demo, paper defaults, explicit live opt-in, global and per-strategy kill switches.
 - **Hackable strategy surface** - strategies publish typed Redis signals and show up in the dashboard through a registry entry.
 - **Production-shaped operations** - Docker images, GCP Terraform, GitHub Actions deployment, Grafana/Prometheus monitoring, runbooks.
